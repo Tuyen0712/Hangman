@@ -1,0 +1,176 @@
+// hangman01.cpp.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include <cctype>
+using namespace std;
+
+// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
+// Debug program: F5 or Debug > Start Debugging menu
+
+// Tips for Getting Started: 
+//   1. Use the Solution Explorer window to add/manage files
+//   2. Use the Team Explorer window to connect to source control
+//   3. Use the Output window to see build output and other messages
+//   4. Use the Error List window to view errors
+//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
+//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+
+
+const string WORD_LIST[] = { "angle", "ant", "apple", "arch", "arm", "army","baby", "bag", "ball", "band", "basin", "basket", "bath", "bed", "bee", "bell", "berry",
+        "bird", "blade", "board", "boat", "bone", "book", "boot", "bottle", "box", "boy",
+        "brain", "brake", "branch", "brick", "bridge", "brush", "bucket", "bulb", "button",
+        "cake", "camera", "card",  "cart", "carriage", "cat", "chain", "cheese", "chest",
+        "chin", "church", "circle", "clock", "cloud", "coat", "collar", "comb", "cord",
+        "cow", "cup", "curtain", "cushion",
+        "dog", "door", "drain", "drawer", "dress", "drop", "ear", "egg", "engine", "eye",
+        "face", "farm", "feather", "finger", "fish", "flag", "floor", "fly",
+        "foot", "fork", "fowl", "frame",
+        "garden", "girl", "glove", "goat", "gun",
+        "hair", "hammer", "hand", "hat", "head", "heart", "hook", "horn", "horse",
+        "hospital", "house",
+        "island", "jewel",
+        "kettle", "key", "knee", "knife", "knot",
+        "leaf", "leg", "library", "line", "lip", "lock",
+        "map", "match", "monkey", "moon", "mouth", "muscle",
+        "nail", "neck", "needle", "nerve", "net", "nose", "nut",
+        "office", "orange", "oven", "parcel", "pen", "pencil", "picture", "pig", "pin",
+        "pipe", "plane", "plate", "plow", "pocket", "pot", "potato", "prison", "pump",
+        "rail", "rat", "receipt", "ring", "rod", "roof", "root",
+        "sail", "school", "scissors", "screw", "seed", "sheep", "shelf", "ship", "shirt",
+        "shoe", "skin", "skirt", "snake", "sock", "spade", "sponge", "spoon", "spring",
+        "square", "stamp", "star", "station", "stem", "stick", "stocking", "stomach",
+        "store", "street", "sun",
+        "table", "tail", "thread", "throat", "thumb", "ticket", "toe", "tongue", "tooth",
+        "town", "train", "tray", "tree", "trousers",
+        "umbrella",
+        "wall", "watch", "wheel", "whip", "whistle", "window", "wire", "wing", "worm" };
+const int MAX_BAD_GUESSES = 7;
+
+const string FIGURE[] = {
+    "    -------------        \n"
+"    |                    \n"
+"    |                    \n"
+"    |                    \n"
+"    |                    \n"
+"    |                    \n"
+"    |      \n"
+
+" --------       \n",
+"    -------------        \n"
+"    |           |         \n"
+"    |                    \n"
+"    |                    \n"
+"    |                    \n"
+"    |                    \n"
+"    |      \n"
+" --------       \n",
+
+"    -------------        \n"
+"    |           |        \n"
+"    |           O         \n"
+"    |                    \n"
+"    |                    \n"
+"    |                    \n"
+"    |      \n"
+" --------       \n",
+
+"    -------------        \n"
+"    |           |         \n"
+"    |           O        \n"
+"    |           |         \n"
+"    |                    \n"
+"    |                    \n"
+"    |      \n"
+" --------       \n",
+
+"    -------------        \n"
+"    |           |         \n"
+"    |           O        \n"
+"    |          /|          \n"
+"    |                    \n"
+"    |                    \n"
+"    |      \n"
+" --------       \n",
+
+"    -------------        \n"
+"    |           |         \n"
+"    |           O         \n"
+"    |          /|\\        \n"
+"    |                    \n"
+"    |                    \n"
+"    |      \n"
+" --------       \n",
+
+"    -------------        \n"
+"    |           |         \n"
+"    |           O         \n"
+"    |          /|\\        \n"
+"    |          /         \n"
+"    |                    \n"
+"    |      \n"
+" --------       \n",
+
+"    -------------        \n"
+"    |           |         \n"
+"    |           O         \n"
+"    |          /|\\        \n"
+"    |          / \\         \n"
+"    |                    \n"
+"    |      \n"
+" --------       \n",
+
+};
+const int COUNT = sizeof(WORD_LIST) / sizeof(string);
+string chooseWord() {
+    int randomIndex = rand() % COUNT;
+    return WORD_LIST[randomIndex];
+}
+void renderWord(string guessedWord, int badGuessedcount) {
+    cout << FIGURE[badGuessedcount] << endl;
+    cout << guessedWord << endl;
+    cout << "Number of wrong guesses: " << badGuessedcount << endl;
+}
+void update(string& guessedWord, const string& secretWord, char guess) {
+    for (int i = secretWord.length() - 1; i >= 0; i--) {
+        if (secretWord[i] == guess) {
+            guessedWord[i] = guess;
+        }
+    }
+
+}
+char readAGuess() {
+    char ch;
+    cout << "Your Guess: ";
+    cin >> ch;
+    return ch;
+}
+bool contains(string secretWord, int guess) {
+    for (int i = 0; i < secretWord.length(); i++) {
+        if (secretWord[i] == guess) return true;
+    }
+    return false;
+}
+int main() {
+    srand(time(0));
+    int badGuessCount = 0;
+    string secretWord = chooseWord();
+    string guessedWord = string(secretWord.length(), '-');
+    do {
+        renderWord(guessedWord, badGuessCount);
+        char guess = readAGuess();
+        if (contains(secretWord, guess)) {
+             update(guessedWord, secretWord, guess);
+        }
+        else badGuessCount++;
+    } while (badGuessCount < MAX_BAD_GUESSES && secretWord != guessedWord);
+    if (badGuessCount < MAX_BAD_GUESSES) cout << "Congratulations! You win!";
+    else cout << FIGURE[badGuessCount]<<endl<<"You lost. The correct word is " << secretWord;
+    return 0;
+}
+
+
+
